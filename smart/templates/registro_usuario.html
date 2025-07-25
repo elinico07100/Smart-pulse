@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Cardíaco - Registro de Usuario</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        
+        .heart-icon {
+            display: block;
+            text-align: center;
+            font-size: 3rem;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        input[type="text"], 
+        input[type="number"], 
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .col {
+            flex: 1;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #c62828;
+            display: none;
+        }
+        
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2e7d32;
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="heart-icon">❤️</div>
+        <h1>Monitor Cardíaco</h1>
+        
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <form id="userForm">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required maxlength="50">
+            </div>
+            
+            <div class="form-group">
+                <label for="apellido">Apellido:</label>
+                <input type="text" id="apellido" name="apellido" required maxlength="50">
+            </div>
+            
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="edad">Edad:</label>
+                        <input type="number" id="edad" name="edad" min="10" max="120" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="peso">Peso (kg):</label>
+                        <input type="number" id="peso" name="peso" min="30" max="300" step="0.1" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="altura">Altura (cm):</label>
+                <input type="number" id="altura" name="altura" min="100" max="250" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn">
+                Continuar a Sesión de Monitoreo
+            </button>
+        </form>
+    </div>
+
+    <script>
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        // Validación en tiempo real de edad basada en fecha de nacimiento
+        document.getElementById('fecha_nacimiento').addEventListener('change', function() {
+            const fechaNac = new Date(this.value);
+            const hoy = new Date();
+            const edad = Math.floor((hoy - fechaNac) / (365.25 * 24 * 60 * 60 * 1000));
+            
+            if (edad >= 10 && edad <= 120) {
+                document.getElementById('edad').value = edad;
+                hideMessages();
+            } else {
+                showError('La edad calculada debe estar entre 10 y 120 años');
+            }
+        });
+        
+        // Validar que la fecha no sea futura
+        document.getElementById('fecha_nacimiento').setAttribute('max', new Date().toISOString().split('T')[0]);
+        
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            hideMessages();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Validaciones del lado cliente
+            const nombre = document.getElementById('nombre').value.trim();
+            const apellido = document.getElementById('apellido').value.trim();
+            const edad = parseInt(document.getElementById('edad').value);
+            const peso = parseFloat(document.getElementById('peso').value);
+            const altura = parseInt(document.getElementById('altura').value);
+            const fechaNac = document.getElementById('fecha_nacimiento').value;
+            
+            // Validaciones
+            if (nombre.length < 2) {
+                showError('El nombre debe tener al menos 2 caracteres');
+                return;
+            }
+            
+            if (apellido.length < 2) {
+                showError('El apellido debe tener al menos 2 caracteres');
+                return;
+            }
+            
+            if (edad < 10 || edad > 120) {
+                showError('La edad debe estar entre 10 y 120 años');
+                return;
+            }
+            
+            if (peso < 30 || peso > 300) {
+                showError('El peso debe estar entre 30 y 300 kg');
+                return;
+            }
+            
+            if (altura < 100 || altura > 250) {
+                showError('La altura debe estar entre 100 y 250 cm');
+                return;
+            }
+            
+            // Validar que la fecha no sea futura
+            const fechaNacimiento = new Date(fechaNac);
+            const hoy = new Date();
+            if (fechaNacimiento > hoy) {
+                showError('La fecha de nacimiento no puede ser en el futuro');
+                return;
+            }
+            
+            // Mostrar loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Guardando datos... <span class="loading"></span>';
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            fetch('/guardar_usuario', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if(result.success) {
+                    showSuccess('¡Datos guardados exitosamente! Redirigiendo...');
+                    setTimeout(() => {
+                        window.location.href = '/sesion';
+                    }, 1500);
+                } else {
+                    showError('Error al guardar datos: ' + result.error);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                showError('Error de conexión: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        });
+    </script>
+</body>
+</html>
