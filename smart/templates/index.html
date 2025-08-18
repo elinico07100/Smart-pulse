@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor BPM - Sensor HW-827</title>
+</head>
+<body>
+    <h1>Monitor de Pulsaciones</h1>
+    <p>Página lista para personalizar</p>
+    
+    <script>
+        // JavaScript para obtener datos BPM del servidor
+        async function getBPMData() {
+            try {
+                const response = await fetch('/api/bpm');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error obteniendo datos BPM:', error);
+                return null;
+            }
+        }
+        
+        // Ejemplo: mostrar BPM cada segundo en consola
+        setInterval(async () => {
+            const data = await getBPMData();
+            if (data && data.bpm) {
+                console.log('BPM actual:', data.bpm);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
