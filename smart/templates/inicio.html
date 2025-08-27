@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart-Pulse - Inicio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8a5c2 0%, #f093c0 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 200px;
+            background: #2d3748;
+            padding: 20px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 30px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .heart-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            fill: #f093c0;
+        }
+
+        .nav-item {
+            padding: 15px 20px;
+            color: #a0aec0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(240, 147, 192, 0.1);
+            color: white;
+            border-left-color: #f093c0;
+        }
+
+        .nav-item.active {
+            background: rgba(240, 147, 192, 0.2);
+            color: white;
+            border-left-color: #f093c0;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #f093c0, #e91e63);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1);
+        }
+
+        .card-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card-description {
+            color: #666;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .card-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093c0, #e91e63);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(240, 147, 192, 0.3);
+        }
+
+        .welcome-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            text-align: center;
+            cursor: default;
+        }
+
+        .welcome-card:hover {
+            transform: none;
+        }
+
+        .welcome-card .card-title,
+        .welcome-card .card-description {
+            color: white;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .user-info h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+        }
+
+        .status-card .card-icon {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .status-card .card-title,
+        .status-card .card-description {
+            color: white;
+        }
+
+        .status-card .card-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .status-card .card-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-card {
+            background: linear-gradient(135deg, #fd7e14, #e55100);
+        }
+
+        .progress-card .card-icon {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-card .card-title,
+        .progress-card .card-description {
+            color: white;
+        }
+
+        .progress-card .card-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-card .card-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quick-stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .quick-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .quick-stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 10px 0;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 36px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .user-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <svg class="heart-icon" viewBox="0 0 24 24">
+                <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5 2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.04L12,21.35Z"/>
+            </svg>
+            Smart-Pulse
+        </div>
+        <div class="nav-item" data-page="/">Registro</div>
+        <div class="nav-item active" data-page="/inicio">Inicio</div>
+        <div class="nav-item" data-page="/sesion">Sesiones</div>
+        <div class="nav-item" data-page="/historial">Historial</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Smart-Pulse</h1>
+            <div class="subtitle">Tu monitor de frecuencia cardíaca inteligente</div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Card de Bienvenida -->
+            <div class="card welcome-card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                    </svg>
+                </div>
+                <h2 class="card-title" id="welcomeTitle">¡Bienvenido!</h2>
+                <p class="card-description" id="welcomeDesc">Comienza tu jornada de monitoreo de salud cardíaca</p>
+                
+                <div class="user-info" id="userInfoCard" style="display: none;">
+                    <h3>Información del Usuario</h3>
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="userAge">--</div>
+                            <div class="stat-label">Edad</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="userGender">--</div>
+                            <div class="stat-label">Género</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="userWeight">--</div>
+                            <div class="stat-label">Peso (kg)</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="userHeight">--</div>
+                            <div class="stat-label">Altura (cm)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Nueva Sesión -->
+            <div class="card" onclick="goToPage('/sesion')">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5 2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.04L12,21.35Z"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">Nueva Sesión</h3>
+                <p class="card-description">Inicia una nueva sesión de monitoreo cardíaco en tiempo real con tu dispositivo.</p>
+                <button class="card-button">Comenzar Monitoreo</button>
+            </div>
+
+            <!-- Card de Estado del Sistema -->
+            <div class="card status-card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">Estado del Sistema</h3>
+                <p class="card-description">Verifica el estado de conexión del sensor y la aplicación.</p>
+                <div class="quick-stats">
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="connectionStatus">●</div>
+                        <div class="quick-stat-label">Sensor</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="lastBPM">--</div>
+                        <div class="quick-stat-label">Último BPM</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="serverStatus">●</div>
+                        <div class="quick-stat-label">Servidor</div>
+                    </div>
+                </div>
+                <button class="card-button" onclick="checkSystemStatus()">Verificar Estado</button>
+            </div>
+
+            <!-- Card de Progreso -->
+            <div class="card progress-card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M16,6L18.29,8.29L13.41,13.17L9.41,9.17L2,16.59L3.41,18L9.41,12L13.41,16L19.71,9.71L22,12V6H16Z"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">Tu Progreso</h3>
+                <p class="card-description">Revisa tus estadísticas y tendencias de salud cardíaca.</p>
+                <div class="quick-stats">
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="totalSessions">0</div>
+                        <div class="quick-stat-label">Sesiones</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="avgBPM">0</div>
+                        <div class="quick-stat-label">BPM Prom</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-value" id="totalCalories">0</div>
+                        <div class="quick-stat-label">Calorías</div>
+                    </div>
+                </div>
+                <button class="card-button" onclick="goToPage('/historial')">Ver Historial</button>
+            </div>
+
+            <!-- Card de Configuración -->
+            <div class="card" onclick="goToPage('/')">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.98C19.47,12.66 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11.02L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11.02C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98Z"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">Configuración</h3>
+                <p class="card-description">Actualiza tu perfil, datos personales y preferencias de la aplicación.</p>
+                <button class="card-button">Configurar</button>
+            </div>
+
+            <!-- Card de Ayuda -->
+            <div class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M11,18H13V16H11V18M12,6A4,4 0 0,0 8,10H10A2,2 0 0,1 12,8A2,2 0 0,1 14,10C14,12 11,11.75 11,15H13C13,12.75 16,12.5 16,10A4,4 0 0,0 12,6M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z"/>
+                    </svg>
+                </div>
+                <h3 class="card-title">Ayuda y Soporte</h3>
+                <p class="card-description">Encuentra guías de uso, preguntas frecuentes y contacto técnico.</p>
+                <button class="card-button" onclick="showHelpInfo()">Ver Ayuda</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navegación
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const page = this.getAttribute('data-page');
+                if (page) {
+                    window.location.href = page;
+                }
+            });
+        });
+
+        // Función para ir a páginas
+        function goToPage(page) {
+            window.location.href = page;
+        }
+
+        // Cargar datos del usuario
+        function loadUserData() {
+            try {
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                if (userData.nombre) {
+                    document.getElementById('welcomeTitle').textContent = `¡Hola, ${userData.nombre.split(' ')[0]}!`;
+                    document.getElementById('welcomeDesc').textContent = 'Tu dashboard personal de monitoreo cardíaco';
+                    
+                    // Mostrar información del usuario
+                    const userInfoCard = document.getElementById('userInfoCard');
+                    userInfoCard.style.display = 'block';
+                    
+                    // Llenar datos
+                    const ageMatch = (userData.edad || '').match(/\d+/);
+                    document.getElementById('userAge').textContent = ageMatch ? ageMatch[0] : '--';
+                    document.getElementById('userGender').textContent = userData.genero || '--';
+                    document.getElementById('userWeight').textContent = userData.peso || '--';
+                    document.getElementById('userHeight').textContent = userData.altura || '--';
+                }
+            } catch(error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Verificar estado del sistema
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/api/bpm');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Actualizar estado del servidor
+                    document.getElementById('serverStatus').textContent = '●';
+                    document.getElementById('serverStatus').style.color = '#4CAF50';
+                    
+                    // Actualizar último BPM
+                    document.getElementById('lastBPM').textContent = data.bpm || '--';
+                    
+                    // Estado de conexión del sensor
+                    if (data.timestamp) {
+                        document.getElementById('connectionStatus').textContent = '●';
+                        document.getElementById('connectionStatus').style.color = '#4CAF50';
+                    } else {
+                        document.getElementById('connectionStatus').textContent = '●';
+                        document.getElementById('connectionStatus').style.color = '#ff6b6b';
+                    }
+                } else {
+                    throw new Error('Server error');
+                }
+            } catch (error) {
+                console.error('Error checking system status:', error);
+                document.getElementById('serverStatus').textContent = '●';
+                document.getElementById('serverStatus').style.color = '#ff6b6b';
+                document.getElementById('connectionStatus').textContent = '●';
+                document.getElementById('connectionStatus').style.color = '#ff6b6b';
+                document.getElementById('lastBPM').textContent = 'Error';
+            }
+        }
+
+        // Cargar estadísticas del historial
+        async function loadProgressData() {
+            try {
+                const response = await fetch('/api/historial');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.historial) {
+                        const sessions = data.historial;
+                        
+                        // Calcular estadísticas
+                        const totalSessions = sessions.length;
+                        const totalBpmSum = sessions.reduce((sum, session) => {
+                            return sum + (parseInt(session['BPM Promedio']) || 0);
+                        }, 0);
+                        const avgBpm = totalSessions > 0 ? Math.round(totalBpmSum / totalSessions) : 0;
+                        
+                        const totalCalories = sessions.reduce((sum, session) => {
+                            return sum + (parseFloat(session['Calorías Quemadas']) || 0);
+                        }, 0);
+
+                        // Actualizar UI
+                        document.getElementById('totalSessions').textContent = totalSessions;
+                        document.getElementById('avgBPM').textContent = avgBpm;
+                        document.getElementById('totalCalories').textContent = Math.round(totalCalories);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading progress data:', error);
+            }
+        }
+
+        // Mostrar información de ayuda
+        function showHelpInfo() {
+            alert(`Smart-Pulse - Guía Rápida:
+
+1. REGISTRO: Completa tu perfil personal para mediciones precisas
+2. SESIÓN: Conecta tu sensor y comienza el monitoreo en tiempo real
+3. HISTORIAL: Revisa todas tus sesiones anteriores y progreso
+
+Conexión del Sensor:
+• Asegúrate de que el dispositivo ESP32 esté conectado a la red
+• Verifica que el sensor esté enviando datos correctamente
+• El puerto UDP configurado es: 8888
+
+Soporte Técnico:
+• Los datos se guardan automáticamente
+• Verifica la conexión de red si hay problemas
+• Reinicia la aplicación si experimentas errores`);
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            checkSystemStatus();
+            loadProgressData();
+            
+            // Actualizar estado cada 30 segundos
+            setInterval(checkSystemStatus, 30000);
+        });
+    </script>
+</body>
+</html>

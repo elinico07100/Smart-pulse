@@ -271,10 +271,10 @@
             </svg>
             Smart-Pulse
         </div>
-        <div class="nav-item active">Registro</div>
-        <div class="nav-item">Inicio</div>
-        <div class="nav-item">Sesiones</div>
-        <div class="nav-item">Configuración</div>
+        <div class="nav-item active" data-page="/">Registro</div>
+        <div class="nav-item" data-page="/inicio">Inicio</div>
+        <div class="nav-item" data-page="/sesion">Sesiones</div>
+        <div class="nav-item" data-page="/historial">Historial</div>
     </div>
 
     <div class="main-content">
@@ -357,6 +357,16 @@
     </div>
 
     <script>
+        // Navegación
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const page = this.getAttribute('data-page');
+                if (page) {
+                    window.location.href = page;
+                }
+            });
+        });
+
         // Calcular edad automáticamente
         document.getElementById('fechaNacimiento').addEventListener('change', function() {
             const fechaNac = new Date(this.value);
@@ -398,25 +408,29 @@
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            const generoSeleccionado = document.querySelector('input[name="genero"]:checked');
+            if (!generoSeleccionado) {
+                alert('Por favor selecciona un género.');
+                return;
+            }
+            
             const formData = {
                 nombre: document.getElementById('nombre').value,
                 fechaNacimiento: document.getElementById('fechaNacimiento').value,
                 edad: document.getElementById('edadCalculada').value,
-                genero: document.querySelector('input[name="genero"]:checked').value,
+                genero: generoSeleccionado.value,
                 altura: document.getElementById('altura').value,
                 peso: document.getElementById('peso').value,
                 imc: document.getElementById('imcCalculado').value
             };
             
-            // Guardar datos del usuario (aquí conectarías con tu backend)
+            // Guardar datos del usuario
             localStorage.setItem('userData', JSON.stringify(formData));
             
             // Mostrar confirmación
             alert('Usuario registrado exitosamente. Redirigiendo a la sesión de monitoreo...');
             
-            // Aquí redirigirías a la página de sesión
-            // window.location.href = 'sesion.html';
-            console.log('Datos del usuario:', formData);
+            window.location.href = '/sesion';
         });
 
         function limpiarFormulario() {
@@ -425,12 +439,24 @@
             document.getElementById('imcCalculado').value = '';
         }
 
-        // Navegación
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                this.classList.add('active');
-            });
+        // Cargar datos guardados al cargar la página
+        window.addEventListener('load', function() {
+            const savedData = localStorage.getItem('userData');
+            if (savedData) {
+                const userData = JSON.parse(savedData);
+                
+                // Llenar campos si hay datos guardados
+                if (userData.nombre) document.getElementById('nombre').value = userData.nombre;
+                if (userData.fechaNacimiento) document.getElementById('fechaNacimiento').value = userData.fechaNacimiento;
+                if (userData.edad) document.getElementById('edadCalculada').value = userData.edad;
+                if (userData.genero) {
+                    const radioButton = document.querySelector(`input[name="genero"][value="${userData.genero}"]`);
+                    if (radioButton) radioButton.checked = true;
+                }
+                if (userData.altura) document.getElementById('altura').value = userData.altura;
+                if (userData.peso) document.getElementById('peso').value = userData.peso;
+                if (userData.imc) document.getElementById('imcCalculado').value = userData.imc;
+            }
         });
     </script>
 </body>

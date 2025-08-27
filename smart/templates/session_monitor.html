@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart-Pulse - Sesión</title>
+    <title>Smart-Pulse - Sesión de Monitoreo</title>
     <style>
         * {
             margin: 0;
@@ -62,172 +62,169 @@
 
         .main-content {
             flex: 1;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
         }
 
-        .session-header {
-            width: 100%;
-            max-width: 1200px;
+        .header {
+            text-align: center;
+            color: white;
             margin-bottom: 30px;
         }
 
-        .session-title {
+        .header h1 {
             font-size: 48px;
             font-weight: bold;
-            color: white;
-            text-align: center;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .user-info {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 15px 25px;
-            color: white;
-            text-align: center;
+            font-size: 18px;
+            opacity: 0.9;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .session-container {
+        .dashboard {
             display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 30px;
-            width: 100%;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
             max-width: 1200px;
-            flex: 1;
+            margin: 0 auto;
         }
 
-        .monitor-panel {
+        .card {
             background: white;
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-card {
             display: flex;
             flex-direction: column;
-        }
-
-        .heart-display {
-            background: linear-gradient(135deg, #4ade80, #22c55e);
-            border-radius: 20px;
-            padding: 40px;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
             text-align: center;
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
         }
 
-        .heart-display::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transform: rotate(45deg);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        .heart-icon-large {
+        .heart-monitor {
             width: 120px;
             height: 120px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: heartbeat 1s ease-in-out infinite;
+        }
+
+        .heart-monitor.disconnected {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            animation: none;
+        }
+
+        .heart-monitor svg {
+            width: 60px;
+            height: 60px;
             fill: white;
-            margin-bottom: 20px;
-            animation: heartbeat 1s infinite;
         }
 
         @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
+            0% { transform: scale(1); }
             50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .connection-status {
-            font-size: 16px;
-            color: white;
-            opacity: 0.9;
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
         }
 
         .bpm-display {
             background: #2d3748;
             border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .bpm-value {
-            font-size: 64px;
-            font-weight: bold;
-            color: #f093c0;
-            margin-bottom: 10px;
-            font-family: 'Courier New', monospace;
+            padding: 40px;
+            margin: 30px 0;
+            width: 100%;
+            max-width: 400px;
         }
 
         .bpm-label {
+            color: #f093c0;
             font-size: 18px;
-            color: #a0aec0;
+            font-weight: 600;
+            margin-bottom: 10px;
         }
 
-        .session-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
+        .bpm-value {
+            color: white;
+            font-size: 72px;
+            font-weight: 800;
+            line-height: 1;
             text-align: center;
-            border: 2px solid #e0e0e0;
         }
 
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 5px;
+        .bpm-unit {
+            color: #a0aec0;
+            font-size: 24px;
+            margin-left: 10px;
         }
 
-        .stat-label {
-            font-size: 14px;
-            color: #666;
+        .calories-display {
+            background: linear-gradient(135deg, #ff9500, #ff6b35);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .calories-label {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .calories-value {
+            color: white;
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .calories-unit {
+            color: white;
+            font-size: 18px;
+            margin-left: 8px;
+            opacity: 0.8;
         }
 
         .control-panel {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             display: flex;
-            flex-direction: column;
-        }
-
-        .control-buttons {
-            display: flex;
-            flex-direction: column;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-top: 30px;
         }
 
         .btn {
-            padding: 20px;
+            flex: 1;
+            padding: 15px 30px;
             border: none;
-            border-radius: 15px;
-            font-size: 18px;
+            border-radius: 12px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -235,128 +232,101 @@
             letter-spacing: 0.5px;
         }
 
-        .btn-start {
-            background: linear-gradient(135deg, #4ade80, #22c55e);
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
         }
 
-        .btn-start:hover:not(:disabled) {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(74, 222, 128, 0.3);
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
         }
 
-        .btn-stop {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093c0, #e91e63);
             color: white;
         }
 
-        .btn-stop:hover:not(:disabled) {
+        .btn-secondary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 10px 20px rgba(240, 147, 192, 0.3);
         }
 
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none !important;
         }
 
-        .session-info {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .status-card {
+            text-align: center;
+        }
+
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            display: inline-block;
+            margin-right: 10px;
+            animation: blink 1s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #4CAF50;
+            animation: none;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
         }
 
         .session-info h3 {
             color: #2d3748;
+            font-size: 20px;
             margin-bottom: 15px;
-            font-size: 18px;
+            text-align: center;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
         }
 
         .info-label {
             color: #666;
+            font-weight: 500;
         }
 
         .info-value {
-            font-weight: 600;
             color: #2d3748;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px;
-            border-radius: 10px;
             font-weight: 600;
-            margin-bottom: 20px;
         }
 
-        .status-connected {
-            background: #dcfce7;
-            color: #166534;
-            border: 2px solid #bbf7d0;
+        .stats-card h3 {
+            color: #2d3748;
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
-        .status-disconnected {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 2px solid #fecaca;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        .status-connected .status-dot {
-            background: #22c55e;
-        }
-
-        .status-disconnected .status-dot {
-            background: #ef4444;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .chart-container {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .last-reading {
+            font-size: 14px;
             color: #666;
-            border: 2px dashed #ddd;
-        }
-
-        @media (max-width: 1024px) {
-            .session-container {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .session-title {
-                font-size: 36px;
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
+            margin-top: 10px;
         }
 
         @media (max-width: 768px) {
@@ -369,8 +339,29 @@
                 padding: 10px 0;
             }
             
-            .session-stats {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 36px;
+            }
+            
+            .dashboard {
                 grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .bpm-value {
+                font-size: 56px;
+            }
+            
+            .control-panel {
+                flex-direction: column;
             }
         }
     </style>
@@ -383,78 +374,66 @@
             </svg>
             Smart-Pulse
         </div>
-        <div class="nav-item">Registro</div>
-        <div class="nav-item active">Sesión</div>
-        <div class="nav-item">Historial</div>
-        <div class="nav-item">Configuración</div>
+        <div class="nav-item" data-page="/">Registro</div>
+        <div class="nav-item" data-page="/inicio">Inicio</div>
+        <div class="nav-item active" data-page="/sesion">Sesión</div>
+        <div class="nav-item" data-page="/historial">Historial</div>
     </div>
 
     <div class="main-content">
-        <div class="session-header">
-            <h1 class="session-title">Sesión de Monitoreo</h1>
-            <div class="user-info" id="userInfo">
-                <strong>Usuario:</strong> <span id="userName">Cargando...</span> | 
-                <strong>Edad:</strong> <span id="userAge">--</span> | 
-                <strong>Género:</strong> <span id="userGender">--</span>
+        <div class="header">
+            <h1>Sesión de Monitoreo</h1>
+            <div class="user-info">
+                <span>Usuario: <span id="userName">Cargando...</span></span> | 
+                <span>Edad: <span id="userAge">--</span></span> | 
+                <span>Género: <span id="userGender">--</span></span>
             </div>
         </div>
 
-        <div class="session-container">
-            <div class="monitor-panel">
-                <div class="heart-display">
-                    <svg class="heart-icon-large" viewBox="0 0 24 24">
+        <div class="dashboard">
+            <div class="card main-card">
+                <div id="heartMonitor" class="heart-monitor disconnected">
+                    <svg viewBox="0 0 24 24">
                         <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5 2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.04L12,21.35Z"/>
                     </svg>
-                    <div class="connection-status" id="connectionStatus">
-                        Esperando conexión del sensor...
-                    </div>
                 </div>
-
+                
+                <div class="connection-status" id="connectionStatus">Esperando conexión del sensor...</div>
+                
                 <div class="bpm-display">
-                    <div class="bpm-value" id="bpmValue">--</div>
                     <div class="bpm-label">BPM</div>
-                </div>
-
-                <div class="session-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="avgBpm">--</div>
-                        <div class="stat-label">Promedio</div>
+                    <div class="bpm-value">
+                        <span id="bpmValue">--</span>
+                        <span class="bpm-unit">bpm</span>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="maxBpm">--</div>
-                        <div class="stat-label">Máximo</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="minBpm">--</div>
-                        <div class="stat-label">Mínimo</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="duration">00:00</div>
-                        <div class="stat-label">Duración</div>
+                    <div class="last-reading">
+                        Última lectura: <span id="lastReading">--</span>
                     </div>
                 </div>
 
-                <div class="chart-container">
-                    <span>Gráfico de frecuencia cardíaca en tiempo real</span>
+                <div class="calories-display">
+                    <div class="calories-label">Calorías Quemadas</div>
+                    <div class="calories-value">
+                        <span id="caloriesValue">0</span>
+                        <span class="calories-unit">cal</span>
+                    </div>
+                </div>
+
+                <div class="control-panel">
+                    <button id="startBtn" class="btn btn-primary">Iniciar Sesión</button>
+                    <button id="stopBtn" class="btn btn-secondary" disabled>Detener Sesión</button>
                 </div>
             </div>
 
-            <div class="control-panel">
-                <div class="status-indicator" id="statusIndicator">
-                    <div class="status-dot"></div>
-                    <span id="statusText">Desconectado</span>
+            <div class="info-panel">
+                <div class="card status-card">
+                    <div class="connection-status">
+                        <span class="status-indicator" id="statusIndicator"></span>
+                        <span id="connectionText">Desconectado</span>
+                    </div>
                 </div>
 
-                <div class="control-buttons">
-                    <button class="btn btn-start" id="startBtn">
-                        Iniciar Sesión
-                    </button>
-                    <button class="btn btn-stop" id="stopBtn" disabled>
-                        Detener Sesión
-                    </button>
-                </div>
-
-                <div class="session-info">
+                <div class="card session-info">
                     <h3>Información de la Sesión</h3>
                     <div class="info-row">
                         <span class="info-label">Estado:</span>
@@ -465,32 +444,32 @@
                         <span class="info-value" id="sessionStart">--</span>
                     </div>
                     <div class="info-row">
+                        <span class="info-label">Duración:</span>
+                        <span class="info-value" id="sessionDuration">00:00</span>
+                    </div>
+                    <div class="info-row">
                         <span class="info-label">Lecturas:</span>
                         <span class="info-value" id="readingCount">0</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Zona FC:</span>
-                        <span class="info-value" id="heartZone">--</span>
+                        <span class="info-value" id="heartRateZone">--</span>
                     </div>
                 </div>
 
-                <div class="session-info">
+                <div class="card stats-card">
                     <h3>Rangos de FC</h3>
                     <div class="info-row">
-                        <span class="info-label">Reposo:</span>
-                        <span class="info-value" id="restingHR">60-100 bpm</span>
+                        <span class="info-label">Promedio:</span>
+                        <span class="info-value"><span id="avgBpm">0</span> bpm</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Aeróbico:</span>
-                        <span class="info-value" id="aerobicHR">--</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Anaeróbico:</span>
-                        <span class="info-value" id="anaerobicHR">--</span>
+                        <span class="info-label">Mínimo:</span>
+                        <span class="info-value"><span id="minBpm">0</span> bpm</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Máximo:</span>
-                        <span class="info-value" id="maxHR">--</span>
+                        <span class="info-value"><span id="maxBpm">0</span> bpm</span>
                     </div>
                 </div>
             </div>
@@ -498,194 +477,354 @@
     </div>
 
     <script>
-        // Variables globales
-        let sessionActive = false;
-        let sessionStartTime = null;
-        let bpmReadings = [];
-        let currentBpm = 0;
-        let readingCount = 0;
-        let durationInterval = null;
+        (function(){
+            // --- Estado UI / datos ---
+            let sessionActive = false;
+            let readings = [];
+            let readCount = 0;
+            let pollTimer = null;
+            let durationTimer = null;
+            let sessionStartTime = null;
+            let userAge = 25;
+            let userWeight = 70;
+            let userGender = 'masculino';
+            let userData = {};
+            let currentCalories = 0;
 
-        // Cargar datos del usuario
-        function loadUserData() {
-            const userData = localStorage.getItem('userData');
-            if (userData) {
-                const user = JSON.parse(userData);
-                document.getElementById('userName').textContent = user.nombre;
-                document.getElementById('userAge').textContent = user.edad;
-                document.getElementById('userGender').textContent = user.genero;
+            // --- Helpers DOM ---
+            const $ = (id) => document.getElementById(id);
+            
+            const setConnectionStatus = (connected) => {
+                const indicator = $('statusIndicator');
+                const text = $('connectionText');
+                const status = $('connectionStatus');
+                const monitor = $('heartMonitor');
                 
-                // Calcular rangos de FC basados en edad y género
-                calculateHeartRateZones(user);
-            }
-        }
-
-        // Calcular zonas de frecuencia cardíaca
-        function calculateHeartRateZones(user) {
-            const age = parseInt(user.edad);
-            const maxHR = 220 - age;
-            const aerobicLow = Math.round(maxHR * 0.7);
-            const aerobicHigh = Math.round(maxHR * 0.8);
-            const anaerobicLow = Math.round(maxHR * 0.8);
-            const anaerobicHigh = Math.round(maxHR * 0.9);
-
-            document.getElementById('maxHR').textContent = maxHR + ' bpm';
-            document.getElementById('aerobicHR').textContent = `${aerobicLow}-${aerobicHigh} bpm`;
-            document.getElementById('anaerobicHR').textContent = `${anaerobicLow}-${anaerobicHigh} bpm`;
-        }
-
-        // Determinar zona de FC actual
-        function getHeartZone(bpm, maxHR) {
-            if (bpm < maxHR * 0.6) return 'Reposo';
-            if (bpm < maxHR * 0.7) return 'Recuperación';
-            if (bpm < maxHR * 0.8) return 'Aeróbica';
-            if (bpm < maxHR * 0.9) return 'Anaeróbica';
-            return 'Máxima';
-        }
-
-        // Iniciar sesión
-        function startSession() {
-            sessionActive = true;
-            sessionStartTime = new Date();
-            bpmReadings = [];
-            readingCount = 0;
-
-            document.getElementById('startBtn').disabled = true;
-            document.getElementById('stopBtn').disabled = false;
-            document.getElementById('sessionState').textContent = 'Activa';
-            document.getElementById('sessionStart').textContent = sessionStartTime.toLocaleTimeString();
-
-            // Iniciar temporizador de duración
-            durationInterval = setInterval(updateDuration, 1000);
-
-            // Simular conexión (aquí conectarías con tu servidor Flask)
-            setTimeout(() => {
-                updateConnectionStatus(true);
-                startReceivingData();
-            }, 2000);
-        }
-
-        // Detener sesión
-        function stopSession() {
-            sessionActive = false;
-            
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('stopBtn').disabled = true;
-            document.getElementById('sessionState').textContent = 'Finalizada';
-
-            clearInterval(durationInterval);
-            updateConnectionStatus(false);
-
-            // Guardar datos de la sesión
-            saveSessionData();
-        }
-
-        // Actualizar duración
-        function updateDuration() {
-            if (!sessionStartTime) return;
-            
-            const now = new Date();
-            const diff = now - sessionStartTime;
-            const minutes = Math.floor(diff / 60000);
-            const seconds = Math.floor((diff % 60000) / 1000);
-            
-            document.getElementById('duration').textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        // Actualizar estado de conexión
-        function updateConnectionStatus(connected) {
-            const indicator = document.getElementById('statusIndicator');
-            const statusText = document.getElementById('statusText');
-            const connectionStatus = document.getElementById('connectionStatus');
-
-            if (connected) {
-                indicator.className = 'status-indicator status-connected';
-                statusText.textContent = 'Conectado';
-                connectionStatus.textContent = 'Sensor conectado - Recibiendo datos';
-            } else {
-                indicator.className = 'status-indicator status-disconnected';
-                statusText.textContent = 'Desconectado';
-                connectionStatus.textContent = 'Esperando conexión del sensor...';
-            }
-        }
-
-        // Simular recepción de datos (aquí conectarías con tu servidor Flask)
-        function startReceivingData() {
-            const interval = setInterval(() => {
-                if (!sessionActive) {
-                    clearInterval(interval);
-                    return;
+                if (connected) {
+                    indicator.classList.add('connected');
+                    text.textContent = 'Conectado';
+                    status.textContent = 'Sensor conectado y funcionando';
+                    monitor.classList.remove('disconnected');
+                } else {
+                    indicator.classList.remove('connected');
+                    text.textContent = 'Desconectado';
+                    status.textContent = 'Esperando conexión del sensor...';
+                    monitor.classList.add('disconnected');
                 }
-
-                // Simular BPM (reemplaza con datos reales de tu servidor)
-                const simulatedBpm = Math.floor(Math.random() * 40) + 60; // 60-100 bpm
-                updateBpmDisplay(simulatedBpm);
-            }, 1000);
-        }
-
-        // Actualizar display de BPM
-        function updateBpmDisplay(bpm) {
-            currentBpm = bpm;
-            bpmReadings.push(bpm);
-            readingCount++;
-
-            document.getElementById('bpmValue').textContent = bpm;
-            document.getElementById('readingCount').textContent = readingCount;
-
-            // Calcular estadísticas
-            const avgBpm = Math.round(bpmReadings.reduce((a, b) => a + b, 0) / bpmReadings.length);
-            const maxBpm = Math.max(...bpmReadings);
-            const minBpm = Math.min(...bpmReadings);
-
-            document.getElementById('avgBpm').textContent = avgBpm;
-            document.getElementById('maxBpm').textContent = maxBpm;
-            document.getElementById('minBpm').textContent = minBpm;
-
-            // Actualizar zona de FC
-            const userData = localStorage.getItem('userData');
-            if (userData) {
-                const user = JSON.parse(userData);
-                const age = parseInt(user.edad);
-                const maxHR = 220 - age;
-                document.getElementById('heartZone').textContent = getHeartZone(bpm, maxHR);
-            }
-        }
-
-        // Guardar datos de la sesión
-        function saveSessionData() {
-            const sessionData = {
-                startTime: sessionStartTime,
-                endTime: new Date(),
-                readings: bpmReadings,
-                avgBpm: bpmReadings.length > 0 ? Math.round(bpmReadings.reduce((a, b) => a + b, 0) / bpmReadings.length) : 0,
-                maxBpm: bpmReadings.length > 0 ? Math.max(...bpmReadings) : 0,
-                minBpm: bpmReadings.length > 0 ? Math.min(...bpmReadings) : 0,
-                duration: document.getElementById('duration').textContent
             };
 
-            // Guardar en localStorage (aquí enviarías a tu servidor)
-            const sessions = JSON.parse(localStorage.getItem('sessions') || '[]');
-            sessions.push(sessionData);
-            localStorage.setItem('sessions', JSON.stringify(sessions));
+            const getHeartRateZone = (bpm, age) => {
+                const maxHR = 220 - age;
+                const percentage = (bpm / maxHR) * 100;
+                
+                if (percentage < 60) return 'Reposo';
+                if (percentage < 70) return 'Grasa';
+                if (percentage < 80) return 'Aeróbico';
+                if (percentage < 90) return 'Anaeróbico';
+                return 'Máximo';
+            };
 
-            console.log('Sesión guardada:', sessionData);
-        }
+            const updateDuration = () => {
+                if (!sessionActive || !sessionStartTime) return;
+                
+                const now = new Date();
+                const diffMs = now - sessionStartTime;
+                const minutes = Math.floor(diffMs / 60000);
+                const seconds = Math.floor((diffMs % 60000) / 1000);
+                
+                $('sessionDuration').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            };
 
-        // Event listeners
-        document.getElementById('startBtn').addEventListener('click', startSession);
-        document.getElementById('stopBtn').addEventListener('click', stopSession);
+            const calculateCalories = (avgBpm, durationMin) => {
+                if (!avgBpm || !durationMin || durationMin === 0) return 0;
+                
+                // Factores de corrección por género
+                const genderFactor = userGender.toLowerCase() === 'masculino' ? 1.0 : 0.9;
+                
+                // Cálculo basado en zona de frecuencia cardíaca
+                const maxHR = 220 - userAge;
+                const hrPercentage = (avgBpm / maxHR) * 100;
+                
+                // Factor de intensidad
+                let intensityFactor;
+                if (hrPercentage < 60) intensityFactor = 0.5;
+                else if (hrPercentage < 70) intensityFactor = 0.7;
+                else if (hrPercentage < 80) intensityFactor = 1.0;
+                else if (hrPercentage < 90) intensityFactor = 1.3;
+                else intensityFactor = 1.6;
+                
+                // Cálculo de calorías
+                const calories = userWeight * intensityFactor * genderFactor * durationMin * 0.1;
+                return Math.round(calories * 10) / 10;
+            };
 
-        // Navegación
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                this.classList.add('active');
+            // --- Actualizaciones UI ---
+            function updateStats(bpm, timestamp) {
+                if (bpm > 0) {
+                    $('bpmValue').textContent = bpm;
+                    $('lastReading').textContent = timestamp || '--';
+
+                    readings.push(bpm);
+                    readCount++;
+                    $('readingCount').textContent = readCount;
+
+                    const sum = readings.reduce((a,b) => a+b, 0);
+                    const avg = Math.round(sum / readings.length);
+                    const min = Math.min(...readings);
+                    const max = Math.max(...readings);
+
+                    $('avgBpm').textContent = isFinite(avg) ? avg : 0;
+                    $('minBpm').textContent = isFinite(min) ? min : 0;
+                    $('maxBpm').textContent = isFinite(max) ? max : 0;
+                    
+                    // Actualizar zona de frecuencia cardíaca
+                    $('heartRateZone').textContent = getHeartRateZone(bpm, userAge);
+                    
+                    // Calcular calorías en tiempo real
+                    if (sessionActive && sessionStartTime) {
+                        const durationMin = (new Date() - sessionStartTime) / 60000;
+                        currentCalories = calculateCalories(avg, durationMin);
+                        $('caloriesValue').textContent = currentCalories;
+                    }
+                }
+            }
+
+            // --- Poll al backend ---
+            async function pollOnce() {
+                try {
+                    const response = await fetch('/api/bpm', {
+                        cache: 'no-store',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await response.text();
+                        console.error('Respuesta no es JSON:', text.substring(0, 200));
+                        throw new Error('El servidor no devolvió JSON válido');
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Datos recibidos:', data);
+                    
+                    const bpm = parseInt(data.bpm || 0);
+                    const timestamp = data.timestamp || null;
+
+                    if (timestamp) {
+                        setConnectionStatus(true);
+                    }
+                    
+                    if (!isNaN(bpm) && bpm > 0) {
+                        updateStats(bpm, timestamp);
+                    } else if (bpm === 0) {
+                        if (timestamp) {
+                            setConnectionStatus(true);
+                        }
+                    }
+                } catch(error) {
+                    setConnectionStatus(false);
+                    console.error('Error polling BPM:', error.message);
+                    $('connectionStatus').textContent = `Error: ${error.message}`;
+                }
+            }
+
+            function startPolling() {
+                if (pollTimer) return;
+                pollTimer = setInterval(pollOnce, 250);
+            }
+
+            function stopPolling() {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+
+            // --- Guardar sesión ---
+            async function saveSession() {
+                if (readings.length === 0) return;
+                
+                const sessionEndTime = new Date();
+                const durationMs = sessionEndTime - sessionStartTime;
+                const durationMin = Math.round(durationMs / 60000);
+                
+                const avg = Math.round(readings.reduce((a,b) => a+b, 0) / readings.length);
+                const min = Math.min(...readings);
+                const max = Math.max(...readings);
+                
+                const sessionData = {
+                    fecha: sessionStartTime.toLocaleDateString('es-AR'),
+                    hora_inicio: sessionStartTime.toLocaleTimeString('es-AR'),
+                    hora_fin: sessionEndTime.toLocaleTimeString('es-AR'),
+                    usuario: userData.nombre || 'Usuario',
+                    edad: parseInt(userData.edad?.match(/\d+/)?.[0]) || userAge,
+                    genero: userData.genero || userGender,
+                    peso: parseFloat(userData.peso) || userWeight,
+                    altura: parseInt(userData.altura) || 170,
+                    duracion: durationMin,
+                    bpm_promedio: avg,
+                    bpm_min: min,
+                    bpm_max: max,
+                    lecturas_totales: readings.length
+                };
+                
+                try {
+                    const response = await fetch('/api/guardar-sesion', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(sessionData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        console.log('Sesión guardada exitosamente');
+                        return result.calorias;
+                    } else {
+                        console.error('Error guardando sesión:', result.error);
+                        return null;
+                    }
+                } catch (error) {
+                    console.error('Error guardando sesión:', error);
+                    return null;
+                }
+            }
+
+            // --- Control de sesión ---
+            function startSession() {
+                if (sessionActive) return;
+                
+                sessionActive = true;
+                sessionStartTime = new Date();
+                readings = [];
+                readCount = 0;
+                currentCalories = 0;
+                
+                $('sessionState').textContent = 'En curso';
+                $('sessionStart').textContent = sessionStartTime.toLocaleTimeString();
+                $('startBtn').disabled = true;
+                $('stopBtn').disabled = false;
+                
+                // Reset stats
+                $('readingCount').textContent = '0';
+                $('avgBpm').textContent = '0';
+                $('minBpm').textContent = '0';
+                $('maxBpm').textContent = '0';
+                $('heartRateZone').textContent = '--';
+                $('caloriesValue').textContent = '0';
+                $('sessionDuration').textContent = '00:00';
+                
+                setConnectionStatus(false);
+                startPolling();
+                
+                // Iniciar contador de duración
+                durationTimer = setInterval(updateDuration, 1000);
+            }
+
+            async function stopSession() {
+                if (!sessionActive) return;
+                
+                sessionActive = false;
+                $('sessionState').textContent = 'Finalizando...';
+                $('startBtn').disabled = false;
+                $('stopBtn').disabled = true;
+                
+                stopPolling();
+                clearInterval(durationTimer);
+                setConnectionStatus(false);
+                
+                // Guardar sesión
+                const finalCalories = await saveSession();
+                
+                $('sessionState').textContent = 'Finalizada';
+                
+                // Mostrar resumen de la sesión
+                if (readings.length > 0) {
+                    const duration = Math.round((new Date() - sessionStartTime) / 1000 / 60);
+                    const avgBpm = Math.round(readings.reduce((a,b) => a+b, 0) / readings.length);
+                    const calories = finalCalories || currentCalories;
+                    
+                    alert(`¡Sesión finalizada exitosamente!
+                    
+Resumen:
+• Duración: ${duration} minutos
+• Lecturas: ${readCount}
+• BPM promedio: ${avgBpm}
+• Calorías quemadas: ${calories} cal
+• Sesión guardada en el historial`);
+                }
+            }
+
+            // --- Cargar datos del usuario ---
+            function loadUserData() {
+                try {
+                    userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    if (userData.nombre) {
+                        $('userName').textContent = userData.nombre;
+                        $('userAge').textContent = userData.edad || '--';
+                        $('userGender').textContent = userData.genero || '--';
+                        
+                        // Extraer datos para cálculos
+                        const ageMatch = (userData.edad || '').match(/\d+/);
+                        if (ageMatch) {
+                            userAge = parseInt(ageMatch[0]);
+                        }
+                        
+                        if (userData.peso) {
+                            userWeight = parseFloat(userData.peso);
+                        }
+                        
+                        if (userData.genero) {
+                            userGender = userData.genero;
+                        }
+                    } else {
+                        // Si no hay datos, redirigir a registro
+                        if (confirm('No se encontraron datos de usuario. ¿Deseas ir al registro?')) {
+                            window.location.href = '/';
+                        }
+                    }
+                } catch(error) {
+                    console.error('Error loading user data:', error);
+                }
+            }
+
+            // --- Navegación ---
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.getAttribute('data-page');
+                    if (page) {
+                        // Confirmar si hay sesión activa
+                        if (sessionActive && page !== '/sesion') {
+                            if (confirm('Hay una sesión activa. ¿Deseas detenerla y continuar?')) {
+                                stopSession();
+                                setTimeout(() => {
+                                    window.location.href = page;
+                                }, 1000);
+                            }
+                        } else {
+                            window.location.href = page;
+                        }
+                    }
+                });
             });
-        });
 
-        // Inicializar
-        loadUserData();
+            // --- Event listeners ---
+            $('startBtn').addEventListener('click', startSession);
+            $('stopBtn').addEventListener('click', stopSession);
+
+            // --- Inicialización ---
+            setConnectionStatus(false);
+            loadUserData();
+            pollOnce();
+        })();
     </script>
 </body>
 </html>
