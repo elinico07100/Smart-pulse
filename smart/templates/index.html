@@ -235,6 +235,32 @@
             fill: white;
         }
 
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #ffa726, #ff9800);
+        }
+
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
@@ -356,8 +382,29 @@
         </div>
     </div>
 
+    <!-- Notification container -->
+    <div id="notification" class="notification">
+        <div id="notificationText"></div>
+    </div>
+
     <script>
-        // Navegación
+        // Almacenamiento en memoria en lugar de localStorage
+        let userData = {};
+
+        // FunciÃ³n para mostrar notificaciones
+        const showNotification = (text, type = 'success', duration = 3000) => {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = text;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.className = notification.className.replace(' show', '');
+            }, duration);
+        };
+
+        // NavegaciÃ³n
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function() {
                 const page = this.getAttribute('data-page');
@@ -367,7 +414,7 @@
             });
         });
 
-        // Calcular edad automáticamente
+        // Calcular edad automÃ¡ticamente
         document.getElementById('fechaNacimiento').addEventListener('change', function() {
             const fechaNac = new Date(this.value);
             const hoy = new Date();
@@ -379,10 +426,10 @@
                 edad--;
             }
             
-            document.getElementById('edadCalculada').value = edad + ' años';
+            document.getElementById('edadCalculada').value = edad + ' aÃ±os';
         });
 
-        // Calcular IMC automáticamente
+        // Calcular IMC automÃ¡ticamente
         function calcularIMC() {
             const altura = parseFloat(document.getElementById('altura').value);
             const peso = parseFloat(document.getElementById('peso').value);
@@ -404,13 +451,13 @@
         document.getElementById('altura').addEventListener('input', calcularIMC);
         document.getElementById('peso').addEventListener('input', calcularIMC);
 
-        // Manejar envío del formulario
+        // Manejar envÃ­o del formulario
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const generoSeleccionado = document.querySelector('input[name="genero"]:checked');
             if (!generoSeleccionado) {
-                alert('Por favor selecciona un género.');
+                showNotification('Por favor selecciona un gÃ©nero.', 'error');
                 return;
             }
             
@@ -424,39 +471,60 @@
                 imc: document.getElementById('imcCalculado').value
             };
             
-            // Guardar datos del usuario
-            localStorage.setItem('userData', JSON.stringify(formData));
+            // Guardar datos del usuario en memoria
+            userData = formData;
             
-            // Mostrar confirmación
-            alert('Usuario registrado exitosamente. Redirigiendo a la sesión de monitoreo...');
+            // Enviar datos al servidor para almacenamiento temporal
+            fetch('/api/user-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            }).catch(error => {
+                console.log('Info: No se pudo sincronizar con el servidor');
+            });
             
-            window.location.href = '/sesion';
+            // Mostrar confirmaciÃ³n y redirigir
+            showNotification('Usuario registrado exitosamente. Redirigiendo...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = '/sesion';
+            }, 1500);
         });
 
         function limpiarFormulario() {
             document.getElementById('registrationForm').reset();
             document.getElementById('edadCalculada').value = '';
             document.getElementById('imcCalculado').value = '';
+            userData = {};
         }
 
-        // Cargar datos guardados al cargar la página
+        // Cargar datos guardados al cargar la pÃ¡gina
         window.addEventListener('load', function() {
-            const savedData = localStorage.getItem('userData');
-            if (savedData) {
-                const userData = JSON.parse(savedData);
-                
-                // Llenar campos si hay datos guardados
-                if (userData.nombre) document.getElementById('nombre').value = userData.nombre;
-                if (userData.fechaNacimiento) document.getElementById('fechaNacimiento').value = userData.fechaNacimiento;
-                if (userData.edad) document.getElementById('edadCalculada').value = userData.edad;
-                if (userData.genero) {
-                    const radioButton = document.querySelector(`input[name="genero"][value="${userData.genero}"]`);
-                    if (radioButton) radioButton.checked = true;
-                }
-                if (userData.altura) document.getElementById('altura').value = userData.altura;
-                if (userData.peso) document.getElementById('peso').value = userData.peso;
-                if (userData.imc) document.getElementById('imcCalculado').value = userData.imc;
-            }
+            // Intentar recuperar datos del servidor
+            fetch('/api/user-data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.nombre) {
+                        userData = data;
+                        
+                        // Llenar campos si hay datos guardados
+                        document.getElementById('nombre').value = userData.nombre || '';
+                        document.getElementById('fechaNacimiento').value = userData.fechaNacimiento || '';
+                        document.getElementById('edadCalculada').value = userData.edad || '';
+                        if (userData.genero) {
+                            const radioButton = document.querySelector(`input[name="genero"][value="${userData.genero}"]`);
+                            if (radioButton) radioButton.checked = true;
+                        }
+                        document.getElementById('altura').value = userData.altura || '';
+                        document.getElementById('peso').value = userData.peso || '';
+                        document.getElementById('imcCalculado').value = userData.imc || '';
+                    }
+                })
+                .catch(error => {
+                    console.log('Info: No hay datos previos disponibles');
+                });
         });
     </script>
 </body>

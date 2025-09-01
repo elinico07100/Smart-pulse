@@ -16,7 +16,7 @@ if not os.path.exists(HISTORIAL_DIR):
     os.makedirs(HISTORIAL_DIR)
 
 def parse_bpm(msg: str):
-    # Acepta {"bpm":72} o un número suelto en el texto
+    # Acepta {"bpm":72} o un nÃºmero suelto en el texto
     try:
         j = json.loads(msg)
         if 'bpm' in j:
@@ -51,73 +51,73 @@ def udp_server():
         sock.close()
         print("[UDP] cerrado")
 
-def calcular_calorias(bpm, edad, peso, genero, duracion_min):
+def calcular_calorias_keytel(bpm, edad, peso, genero, duracion_min):
     """
-    Calcula calorías quemadas aproximadas basado en BPM promedio
-    Fórmula aproximada basada en estudios de gasto calórico
+    FÃ³rmula de Keytel - muy usada en dispositivos fitness
     """
-    # Factores de corrección por género
-    factor_genero = 1.0 if genero.lower() == 'masculino' else 0.9
+    if not all([bpm, edad, peso, duracion_min]) or duracion_min <= 0:
+        return 0
     
-    # Cálculo basado en zona de frecuencia cardíaca
-    fcm = 220 - edad  # Frecuencia cardíaca máxima
-    porcentaje_fcm = (bpm / fcm) * 100
+    es_hombre = genero.lower() in ['masculino', 'hombre', 'm']
     
-    # Base metabólica por minuto (aproximada)
-    if porcentaje_fcm < 60:
-        factor_intensidad = 0.5
-    elif porcentaje_fcm < 70:
-        factor_intensidad = 0.7
-    elif porcentaje_fcm < 80:
-        factor_intensidad = 1.0
-    elif porcentaje_fcm < 90:
-        factor_intensidad = 1.3
+    if es_hombre:
+        # Hombres: CalorÃ­as = ((-55.0969 + (0.6309 Ã— FC) + (0.1988 Ã— peso) + (0.2017 Ã— edad)) / 4.184) Ã— 60 Ã— duraciÃ³n
+        cal_por_min = (-55.0969 + (0.6309 * bpm) + (0.1988 * peso) + (0.2017 * edad)) / 4.184
     else:
-        factor_intensidad = 1.6
+        # Mujeres: CalorÃ­as = ((-20.4022 + (0.4472 Ã— FC) - (0.1263 Ã— peso) + (0.074 Ã— edad)) / 4.184) Ã— 60 Ã— duraciÃ³n  
+        cal_por_min = (-20.4022 + (0.4472 * bpm) - (0.1263 * peso) + (0.074 * edad)) / 4.184
     
-    # Cálculo aproximado: peso * factor_intensidad * factor_género * duración
-    calorias = peso * factor_intensidad * factor_genero * duracion_min * 0.1
+    # Asegurar que no sea negativo
+    cal_por_min = max(cal_por_min, 0.5)
     
-    return round(calorias, 1)
+    calorias_totales = cal_por_min * duracion_min
+    
+    return round(calorias_totales, 1)
+
 
 def guardar_sesion(datos_sesion):
-    """Guarda la sesión en un archivo CSV"""
+    """Guarda la sesiÃ³n en un archivo CSV"""
     fecha_archivo = datetime.now().strftime("%Y-%m-%d")
     archivo_csv = os.path.join(HISTORIAL_DIR, f"sesiones_{fecha_archivo}.csv")
     
     # Verificar si el archivo existe para escribir headers
     archivo_existe = os.path.exists(archivo_csv)
     
-    with open(archivo_csv, 'a', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        
-        # Escribir headers si es un archivo nuevo
-        if not archivo_existe:
+    try:
+        with open(archivo_csv, 'a', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            
+            # Escribir headers si es un archivo nuevo
+            if not archivo_existe:
+                writer.writerow([
+                    'Fecha', 'Hora Inicio', 'Hora Fin', 'Usuario', 'Edad', 'GÃ©nero', 
+                    'Peso', 'Altura', 'DuraciÃ³n (min)', 'BPM Promedio', 'BPM Min', 
+                    'BPM Max', 'Lecturas Totales', 'CalorÃ­as Quemadas'
+                ])
+            
+            # Escribir datos de la sesiÃ³n
             writer.writerow([
-                'Fecha', 'Hora Inicio', 'Hora Fin', 'Usuario', 'Edad', 'Género', 
-                'Peso', 'Altura', 'Duración (min)', 'BPM Promedio', 'BPM Min', 
-                'BPM Max', 'Lecturas Totales', 'Calorías Quemadas'
+                datos_sesion['fecha'],
+                datos_sesion['hora_inicio'],
+                datos_sesion['hora_fin'],
+                datos_sesion['usuario'],
+                datos_sesion['edad'],
+                datos_sesion['genero'],
+                datos_sesion['peso'],
+                datos_sesion['altura'],
+                datos_sesion['duracion'],
+                datos_sesion['bpm_promedio'],
+                datos_sesion['bpm_min'],
+                datos_sesion['bpm_max'],
+                datos_sesion['lecturas_totales'],
+                datos_sesion['calorias']
             ])
         
-        # Escribir datos de la sesión
-        writer.writerow([
-            datos_sesion['fecha'],
-            datos_sesion['hora_inicio'],
-            datos_sesion['hora_fin'],
-            datos_sesion['usuario'],
-            datos_sesion['edad'],
-            datos_sesion['genero'],
-            datos_sesion['peso'],
-            datos_sesion['altura'],
-            datos_sesion['duracion'],
-            datos_sesion['bpm_promedio'],
-            datos_sesion['bpm_min'],
-            datos_sesion['bpm_max'],
-            datos_sesion['lecturas_totales'],
-            datos_sesion['calorias']
-        ])
-    
-    print(f"Sesión guardada en: {archivo_csv}")
+        print(f"SesiÃ³n guardada en: {archivo_csv}")
+        return True
+    except Exception as e:
+        print(f"Error guardando sesiÃ³n: {e}")
+        return False
 
 def obtener_historial():
     """Obtiene todas las sesiones guardadas"""
@@ -132,12 +132,14 @@ def obtener_historial():
                     with open(ruta_archivo, 'r', encoding='utf-8') as file:
                         reader = csv.DictReader(file)
                         for fila in reader:
-                            historial.append(fila)
+                            # Validar que la fila tenga datos vÃ¡lidos
+                            if fila.get('Fecha') and fila.get('Usuario'):
+                                historial.append(fila)
                 except Exception as e:
                     print(f"Error leyendo {archivo}: {e}")
     
-    # Ordenar por fecha y hora (más recientes primero)
-    historial.sort(key=lambda x: f"{x['Fecha']} {x['Hora Inicio']}", reverse=True)
+    # Ordenar por fecha y hora (mÃ¡s recientes primero)
+    historial.sort(key=lambda x: f"{x.get('Fecha', '')} {x.get('Hora Inicio', '')}", reverse=True)
     return historial
 
 @app.route('/')
@@ -162,25 +164,41 @@ def get_bpm():
 
 @app.route('/api/calcular-calorias', methods=['POST'])
 def calcular_calorias_api():
-    datos = request.json
-    
-    calorias = calcular_calorias(
-        datos['bpm_promedio'],
-        datos['edad'],
-        datos['peso'],
-        datos['genero'],
-        datos['duracion']
-    )
-    
-    return jsonify({'calorias': calorias})
+    try:
+        datos = request.json
+        
+        if not datos:
+            return jsonify({'error': 'No se recibieron datos'}), 400
+        
+        calorias = calcular_calorias_keytel(
+            datos.get('bpm_promedio', 0),
+            datos.get('edad', 25),
+            datos.get('peso', 70),
+            datos.get('genero', 'masculino'),
+            datos.get('duracion', 0)
+        )
+        
+        return jsonify({'calorias': calorias})
+    except Exception as e:
+        print(f"Error calculando calorÃ­as: {e}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 @app.route('/api/guardar-sesion', methods=['POST'])
 def guardar_sesion_api():
     try:
         datos = request.json
         
-        # Calcular calorías
-        calorias = calcular_calorias(
+        if not datos:
+            return jsonify({'success': False, 'error': 'No se recibieron datos'}), 400
+        
+        # Validar datos requeridos
+        campos_requeridos = ['usuario', 'edad', 'genero', 'peso', 'duracion', 'bpm_promedio']
+        for campo in campos_requeridos:
+            if campo not in datos or datos[campo] is None:
+                return jsonify({'success': False, 'error': f'Campo requerido faltante: {campo}'}), 400
+        
+        # Calcular calorÃ­as
+        calorias = calcular_calorias_keytel(
             datos['bpm_promedio'],
             datos['edad'],
             datos['peso'],
@@ -189,19 +207,21 @@ def guardar_sesion_api():
         )
         datos['calorias'] = calorias
         
-        # Guardar sesión
-        guardar_sesion(datos)
-        
-        return jsonify({'success': True, 'calorias': calorias})
+        # Guardar sesiÃ³n
+        if guardar_sesion(datos):
+            return jsonify({'success': True, 'calorias': calorias})
+        else:
+            return jsonify({'success': False, 'error': 'Error al guardar en archivo'}), 500
+            
     except Exception as e:
-        print(f"Error guardando sesión: {e}")
+        print(f"Error guardando sesiÃ³n: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/historial')
 def get_historial():
     try:
         historial = obtener_historial()
-        return jsonify({'historial': historial})
+        return jsonify({'historial': historial, 'total': len(historial)})
     except Exception as e:
         print(f"Error obteniendo historial: {e}")
         return jsonify({'error': str(e)}), 500

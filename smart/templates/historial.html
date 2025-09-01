@@ -310,10 +310,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .calories-icon::before {
-            content: "🔥";
             font-size: 10px;
         }
 
@@ -407,6 +403,25 @@
                 padding: 10px 8px;
             }
         }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
     </style>
 </head>
 <body>
@@ -429,14 +444,15 @@
             <div class="subtitle">Revisa tus mediciones anteriores y progreso</div>
         </div>
 
+        <div id="alertContainer"></div>
+
         <div class="controls">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Buscar por usuario o fecha...">
+                <input type="text" id="searchInput" placeholder="Buscar por usuario, fecha o género...">
                 <button class="btn btn-secondary" onclick="searchSessions()">Buscar</button>
             </div>
             <div>
-                <button class="btn btn-primary" onclick="refreshData()">Actualizar</button>
-                <button class="btn btn-secondary" onclick="exportData()">Exportar</button>
+                <button class="btn btn-primary" onclick="refreshData()">Actualizar Datos</button>
             </div>
         </div>
 
@@ -498,6 +514,32 @@
         let sessionsData = [];
         let filteredData = [];
 
+        // Función para mostrar alertas
+        function showAlert(message, type = 'error') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.textContent = message;
+            
+            alertContainer.appendChild(alertDiv);
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Función para formatear números de manera segura
+        function safeParseInt(value, defaultValue = 0) {
+            const parsed = parseInt(value);
+            return isNaN(parsed) ? defaultValue : parsed;
+        }
+
+        function safeParseFloat(value, defaultValue = 0) {
+            const parsed = parseFloat(value);
+            return isNaN(parsed) ? defaultValue : parsed;
+        }
+
         // Navegación
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function() {
@@ -514,7 +556,7 @@
                 const response = await fetch('/api/historial');
                 const data = await response.json();
                 
-                if (data.historial) {
+                if (data.historial && Array.isArray(data.historial)) {
                     sessionsData = data.historial;
                     filteredData = [...sessionsData];
                     updateStats();
@@ -526,6 +568,7 @@
             } catch (error) {
                 console.error('Error loading history:', error);
                 showEmptyState('Error de conexión');
+                showAlert('No se pudo conectar con el servidor', 'error');
             }
         }
 
@@ -533,16 +576,16 @@
         function updateStats() {
             const totalSessions = sessionsData.length;
             const totalMinutes = sessionsData.reduce((sum, session) => {
-                return sum + (parseInt(session['Duración (min)']) || 0);
+                return sum + safeParseInt(session['Duración (min)']);
             }, 0);
             
             const totalBpmSum = sessionsData.reduce((sum, session) => {
-                return sum + (parseInt(session['BPM Promedio']) || 0);
+                return sum + safeParseInt(session['BPM Promedio']);
             }, 0);
             const avgBpm = totalSessions > 0 ? Math.round(totalBpmSum / totalSessions) : 0;
             
             const totalCalories = sessionsData.reduce((sum, session) => {
-                return sum + (parseFloat(session['Calorías Quemadas']) || 0);
+                return sum + safeParseFloat(session['Calorías Quemadas']);
             }, 0);
 
             document.getElementById('totalSessions').textContent = totalSessions;
@@ -578,32 +621,32 @@
                         ${filteredData.map(session => `
                             <tr>
                                 <td>
-                                    <strong>${session.Fecha}</strong><br>
-                                    <small style="color: #666;">${session['Hora Inicio']} - ${session['Hora Fin']}</small>
+                                    <strong>${session.Fecha || 'N/A'}</strong><br>
+                                    <small style="color: #666;">${session['Hora Inicio'] || 'N/A'} - ${session['Hora Fin'] || 'N/A'}</small>
                                 </td>
                                 <td>
-                                    <strong>${session.Usuario}</strong><br>
-                                    <small style="color: #666;">${session.Edad} años, ${session.Género}</small>
+                                    <strong>${session.Usuario || 'N/A'}</strong><br>
+                                    <small style="color: #666;">${session.Edad || 'N/A'} años, ${session.Género || 'N/A'}</small>
                                 </td>
-                                <td>${session['Duración (min)']} min</td>
+                                <td>${safeParseInt(session['Duración (min)'])} min</td>
                                 <td>
                                     <div class="bpm-indicator">
-                                        <strong>${session['BPM Promedio']}</strong>
+                                        <strong>${safeParseInt(session['BPM Promedio'])}</strong>
                                         <div class="bpm-bar">
-                                            <div class="bpm-fill" style="width: ${Math.min((session['BPM Promedio'] / 200) * 100, 100)}%"></div>
+                                            <div class="bpm-fill" style="width: ${Math.min((safeParseInt(session['BPM Promedio']) / 200) * 100, 100)}%"></div>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <small style="color: #666;">
-                                        ${session['BPM Min']} - ${session['BPM Max']} bpm
+                                        ${safeParseInt(session['BPM Min'])} - ${safeParseInt(session['BPM Max'])} bpm
                                     </small>
                                 </td>
-                                <td>${session['Lecturas Totales']}</td>
+                                <td>${safeParseInt(session['Lecturas Totales'])}</td>
                                 <td>
                                     <div class="calories-cell">
-                                        <div class="calories-icon"></div>
-                                        <strong>${Math.round(parseFloat(session['Calorías Quemadas']) || 0)}</strong>
+                                        <div class="calories-icon">🔥</div>
+                                        <strong>${Math.round(safeParseFloat(session['Calorías Quemadas']))}</strong>
                                     </div>
                                 </td>
                                 <td>
@@ -642,9 +685,13 @@
                 filteredData = [...sessionsData];
             } else {
                 filteredData = sessionsData.filter(session => {
-                    return session.Usuario.toLowerCase().includes(searchTerm) ||
-                           session.Fecha.toLowerCase().includes(searchTerm) ||
-                           session.Género.toLowerCase().includes(searchTerm);
+                    const usuario = (session.Usuario || '').toLowerCase();
+                    const fecha = (session.Fecha || '').toLowerCase();
+                    const genero = (session.Género || '').toLowerCase();
+                    
+                    return usuario.includes(searchTerm) ||
+                           fecha.includes(searchTerm) ||
+                           genero.includes(searchTerm);
                 });
             }
             
@@ -654,17 +701,13 @@
         // Actualizar datos
         function refreshData() {
             document.getElementById('tableContainer').innerHTML = '<div class="loading">Actualizando datos...</div>';
-            loadHistoryData();
-        }
-
-        // Exportar datos (placeholder)
-        function exportData() {
-            alert('Funcionalidad de exportación en desarrollo.\nLos datos se guardan automáticamente en la carpeta "historiales" del proyecto.');
+            setTimeout(loadHistoryData, 500); // Pequeña demora para mostrar el loading
         }
 
         // Event listeners para búsqueda en tiempo real
         document.getElementById('searchInput').addEventListener('input', function() {
-            setTimeout(searchSessions, 300);
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(searchSessions, 300);
         });
 
         // Enter key para buscar

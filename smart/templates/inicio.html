@@ -284,6 +284,94 @@
             opacity: 0.8;
         }
 
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #ffa726, #ff9800);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+        }
+
+        .help-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .help-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: -10px;
+        }
+
+        .close-modal:hover {
+            color: #000;
+        }
+
+        .help-section {
+            margin-bottom: 20px;
+        }
+
+        .help-section h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #f093c0;
+        }
+
+        .help-section p, .help-section li {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .help-section ul {
+            padding-left: 20px;
+        }
+
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
@@ -313,6 +401,12 @@
             
             .user-stats {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .help-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 20px;
             }
         }
     </style>
@@ -391,7 +485,7 @@
                     </svg>
                 </div>
                 <h3 class="card-title">Estado del Sistema</h3>
-                <p class="card-description">Verifica el estado de conexión del sensor y la aplicación.</p>
+                <p class="card-description">Información del estado de conexión y últimas mediciones del sensor.</p>
                 <div class="quick-stats">
                     <div class="quick-stat">
                         <div class="quick-stat-value" id="connectionStatus">●</div>
@@ -406,7 +500,6 @@
                         <div class="quick-stat-label">Servidor</div>
                     </div>
                 </div>
-                <button class="card-button" onclick="checkSystemStatus()">Verificar Estado</button>
             </div>
 
             <!-- Card de Progreso -->
@@ -436,32 +529,123 @@
             </div>
 
             <!-- Card de Configuración -->
-            <div class="card" onclick="goToPage('/')">
+            <div class="card">
                 <div class="card-icon">
                     <svg viewBox="0 0 24 24">
                         <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.98C19.47,12.66 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11.02L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11.02C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98Z"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Configuración</h3>
-                <p class="card-description">Actualiza tu perfil, datos personales y preferencias de la aplicación.</p>
-                <button class="card-button">Configurar</button>
+                <h3 class="card-title">Configuración de Usuario</h3>
+                <p class="card-description">Actualiza tu perfil y datos personales para mediciones más precisas.</p>
+                <button class="card-button" onclick="goToPage('/')">Ir al Registro</button>
             </div>
 
             <!-- Card de Ayuda -->
-            <div class="card">
+            <div class="card" onclick="showHelpModal()">
                 <div class="card-icon">
                     <svg viewBox="0 0 24 24">
                         <path d="M11,18H13V16H11V18M12,6A4,4 0 0,0 8,10H10A2,2 0 0,1 12,8A2,2 0 0,1 14,10C14,12 11,11.75 11,15H13C13,12.75 16,12.5 16,10A4,4 0 0,0 12,6M5,3H19A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3Z"/>
                     </svg>
                 </div>
-                <h3 class="card-title">Ayuda y Soporte</h3>
-                <p class="card-description">Encuentra guías de uso, preguntas frecuentes y contacto técnico.</p>
-                <button class="card-button" onclick="showHelpInfo()">Ver Ayuda</button>
+                <h3 class="card-title">Información de Uso</h3>
+                <p class="card-description">Guía rápida para usar el sistema de monitoreo cardíaco Smart-Pulse.</p>
+                <button class="card-button">Ver Información</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div id="notificationText"></div>
+    </div>
+
+    <!-- Modal de Ayuda -->
+    <div id="helpModal" class="help-modal">
+        <div class="help-content">
+            <span class="close-modal" onclick="closeHelpModal()">&times;</span>
+            <h2 style="color: #2d3748; margin-bottom: 20px; text-align: center;">Smart-Pulse - Guía de Uso</h2>
+            
+            <div class="help-section">
+                <h3>1. Configuración Inicial</h3>
+                <p><strong>REGISTRO:</strong> Completa tu perfil personal en la sección "Registro" para obtener mediciones precisas de calorías y zonas de frecuencia cardíaca.</p>
+                <ul>
+                    <li>Ingresa tu nombre completo, fecha de nacimiento y género</li>
+                    <li>Proporciona tu altura y peso actual</li>
+                    <li>El sistema calculará automáticamente tu edad e IMC</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>2. Monitoreo en Tiempo Real</h3>
+                <p><strong>SESIÓN:</strong> Inicia una sesión de monitoreo cardíaco conectando tu dispositivo sensor.</p>
+                <ul>
+                    <li>Asegúrate de que el dispositivo ESP32 esté conectado a la red WiFi</li>
+                    <li>Verifica que el sensor esté enviando datos al puerto UDP 8888</li>
+                    <li>El sistema mostrará el BPM en tiempo real y calculará las calorías</li>
+                    <li>Puedes ver tu zona de frecuencia cardíaca durante el ejercicio</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>3. Seguimiento de Progreso</h3>
+                <p><strong>HISTORIAL:</strong> Revisa todas tus sesiones anteriores y analiza tu progreso.</p>
+                <ul>
+                    <li>Ve estadísticas completas de cada sesión</li>
+                    <li>Analiza tendencias de BPM promedio, mínimo y máximo</li>
+                    <li>Revisa las calorías quemadas en cada entrenamiento</li>
+                    <li>Busca sesiones por fecha, usuario o género</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>4. Solución de Problemas</h3>
+                <p><strong>Conexión del Sensor:</strong></p>
+                <ul>
+                    <li>Verifica que el ESP32 esté encendido y conectado al WiFi</li>
+                    <li>Asegúrate de que el sensor de pulso esté correctamente conectado</li>
+                    <li>El indicador debe mostrar "Conectado" cuando funcione correctamente</li>
+                </ul>
+                <p><strong>Datos:</strong></p>
+                <ul>
+                    <li>Los datos se guardan automáticamente en archivos CSV</li>
+                    <li>Si hay problemas de conexión, reinicia la aplicación</li>
+                    <li>Verifica la configuración de red si no hay comunicación</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>5. Información Técnica</h3>
+                <p><strong>Especificaciones:</strong></p>
+                <ul>
+                    <li>Puerto UDP: 8888 (configurable en RecibePulso.py)</li>
+                    <li>Rango de BPM válido: 20-220 latidos por minuto</li>
+                    <li>Cálculo de calorías: Fórmula de Keytel (precisa para ejercicio)</li>
+                    <li>Almacenamiento: Archivos CSV por fecha en carpeta 'historiales/'</li>
+                </ul>
             </div>
         </div>
     </div>
 
     <script>
+        // Datos de usuario en memoria (sin usar localStorage)
+        let userData = {};
+        let userDataLoaded = false;
+
+        // Función para mostrar notificaciones silenciosa
+        const showNotification = (text, type = 'success', duration = 4000) => {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            if (!notification || !notificationText) return;
+            
+            notificationText.textContent = text;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.className = notification.className.replace(' show', '');
+            }, duration);
+        };
+
         // Navegación
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function() {
@@ -478,123 +662,184 @@
         }
 
         // Cargar datos del usuario
-        function loadUserData() {
+        async function loadUserData() {
             try {
-                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                if (userData.nombre) {
-                    document.getElementById('welcomeTitle').textContent = `¡Hola, ${userData.nombre.split(' ')[0]}!`;
-                    document.getElementById('welcomeDesc').textContent = 'Tu dashboard personal de monitoreo cardíaco';
-                    
-                    // Mostrar información del usuario
-                    const userInfoCard = document.getElementById('userInfoCard');
-                    userInfoCard.style.display = 'block';
-                    
-                    // Llenar datos
-                    const ageMatch = (userData.edad || '').match(/\d+/);
-                    document.getElementById('userAge').textContent = ageMatch ? ageMatch[0] : '--';
-                    document.getElementById('userGender').textContent = userData.genero || '--';
-                    document.getElementById('userWeight').textContent = userData.peso || '--';
-                    document.getElementById('userHeight').textContent = userData.altura || '--';
+                const response = await fetch('/api/user-data');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.nombre) {
+                        userData = data;
+                        userDataLoaded = true;
+                        
+                        // Actualizar UI con datos del usuario
+                        const welcomeTitle = document.getElementById('welcomeTitle');
+                        const welcomeDesc = document.getElementById('welcomeDesc');
+                        
+                        if (welcomeTitle && welcomeDesc) {
+                            welcomeTitle.textContent = `¡Hola, ${userData.nombre.split(' ')[0]}!`;
+                            welcomeDesc.textContent = 'Tu dashboard personal de monitoreo cardíaco';
+                        }
+                        
+                        // Mostrar información del usuario
+                        const userInfoCard = document.getElementById('userInfoCard');
+                        if (userInfoCard) {
+                            userInfoCard.style.display = 'block';
+                            
+                            // Llenar datos
+                            const ageMatch = (userData.edad || '').toString().match(/\d+/);
+                            const userAge = document.getElementById('userAge');
+                            const userGender = document.getElementById('userGender');
+                            const userWeight = document.getElementById('userWeight');
+                            const userHeight = document.getElementById('userHeight');
+                            
+                            if (userAge) userAge.textContent = ageMatch ? ageMatch[0] : '--';
+                            if (userGender) userGender.textContent = userData.genero || '--';
+                            if (userWeight) userWeight.textContent = userData.peso || '--';
+                            if (userHeight) userHeight.textContent = userData.altura || '--';
+                        }
+                    }
                 }
-            } catch(error) {
-                console.error('Error loading user data:', error);
+            } catch (error) {
+                console.log('No se pudieron cargar los datos del usuario');
+            }
+        }
+
+        // Cargar estadísticas del historial
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/historial');
+                if (response.ok) {
+                    const data = await response.json();
+                    const historial = data.historial || [];
+                    
+                    // Calcular estadísticas
+                    const totalSessions = historial.length;
+                    let totalBPM = 0;
+                    let totalCalories = 0;
+                    let validSessions = 0;
+                    
+                    historial.forEach(sesion => {
+                        const bpm = parseFloat(sesion['BPM Promedio'] || 0);
+                        const calorias = parseFloat(sesion['Calorías Quemadas'] || 0);
+                        
+                        if (bpm > 0) {
+                            totalBPM += bpm;
+                            validSessions++;
+                        }
+                        totalCalories += calorias;
+                    });
+                    
+                    const avgBPM = validSessions > 0 ? Math.round(totalBPM / validSessions) : 0;
+                    
+                    // Actualizar UI
+                    const totalSessionsEl = document.getElementById('totalSessions');
+                    const avgBPMEl = document.getElementById('avgBPM');
+                    const totalCaloriesEl = document.getElementById('totalCalories');
+                    
+                    if (totalSessionsEl) totalSessionsEl.textContent = totalSessions;
+                    if (avgBPMEl) avgBPMEl.textContent = avgBPM;
+                    if (totalCaloriesEl) totalCaloriesEl.textContent = Math.round(totalCalories);
+                }
+            } catch (error) {
+                console.log('No se pudieron cargar las estadísticas');
             }
         }
 
         // Verificar estado del sistema
         async function checkSystemStatus() {
             try {
+                // Verificar servidor
+                const serverStatusEl = document.getElementById('serverStatus');
+                if (serverStatusEl) {
+                    serverStatusEl.textContent = '●';
+                    serverStatusEl.style.color = '#4CAF50';
+                }
+                
+                // Verificar último BPM
                 const response = await fetch('/api/bpm');
                 if (response.ok) {
                     const data = await response.json();
+                    const lastBPMEl = document.getElementById('lastBPM');
+                    const connectionStatusEl = document.getElementById('connectionStatus');
                     
-                    // Actualizar estado del servidor
-                    document.getElementById('serverStatus').textContent = '●';
-                    document.getElementById('serverStatus').style.color = '#4CAF50';
-                    
-                    // Actualizar último BPM
-                    document.getElementById('lastBPM').textContent = data.bpm || '--';
-                    
-                    // Estado de conexión del sensor
-                    if (data.timestamp) {
-                        document.getElementById('connectionStatus').textContent = '●';
-                        document.getElementById('connectionStatus').style.color = '#4CAF50';
+                    if (data.bpm && data.bpm > 0) {
+                        if (lastBPMEl) lastBPMEl.textContent = data.bpm;
+                        if (connectionStatusEl) {
+                            connectionStatusEl.textContent = '●';
+                            connectionStatusEl.style.color = '#4CAF50';
+                        }
                     } else {
-                        document.getElementById('connectionStatus').textContent = '●';
-                        document.getElementById('connectionStatus').style.color = '#ff6b6b';
-                    }
-                } else {
-                    throw new Error('Server error');
-                }
-            } catch (error) {
-                console.error('Error checking system status:', error);
-                document.getElementById('serverStatus').textContent = '●';
-                document.getElementById('serverStatus').style.color = '#ff6b6b';
-                document.getElementById('connectionStatus').textContent = '●';
-                document.getElementById('connectionStatus').style.color = '#ff6b6b';
-                document.getElementById('lastBPM').textContent = 'Error';
-            }
-        }
-
-        // Cargar estadísticas del historial
-        async function loadProgressData() {
-            try {
-                const response = await fetch('/api/historial');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.historial) {
-                        const sessions = data.historial;
-                        
-                        // Calcular estadísticas
-                        const totalSessions = sessions.length;
-                        const totalBpmSum = sessions.reduce((sum, session) => {
-                            return sum + (parseInt(session['BPM Promedio']) || 0);
-                        }, 0);
-                        const avgBpm = totalSessions > 0 ? Math.round(totalBpmSum / totalSessions) : 0;
-                        
-                        const totalCalories = sessions.reduce((sum, session) => {
-                            return sum + (parseFloat(session['Calorías Quemadas']) || 0);
-                        }, 0);
-
-                        // Actualizar UI
-                        document.getElementById('totalSessions').textContent = totalSessions;
-                        document.getElementById('avgBPM').textContent = avgBpm;
-                        document.getElementById('totalCalories').textContent = Math.round(totalCalories);
+                        if (lastBPMEl) lastBPMEl.textContent = '--';
+                        if (connectionStatusEl) {
+                            connectionStatusEl.textContent = '●';
+                            connectionStatusEl.style.color = '#ff6b6b';
+                        }
                     }
                 }
             } catch (error) {
-                console.error('Error loading progress data:', error);
+                const serverStatusEl = document.getElementById('serverStatus');
+                const connectionStatusEl = document.getElementById('connectionStatus');
+                
+                if (serverStatusEl) {
+                    serverStatusEl.textContent = '●';
+                    serverStatusEl.style.color = '#ff6b6b';
+                }
+                if (connectionStatusEl) {
+                    connectionStatusEl.textContent = '●';
+                    connectionStatusEl.style.color = '#ff6b6b';
+                }
             }
         }
 
-        // Mostrar información de ayuda
-        function showHelpInfo() {
-            alert(`Smart-Pulse - Guía Rápida:
-
-1. REGISTRO: Completa tu perfil personal para mediciones precisas
-2. SESIÓN: Conecta tu sensor y comienza el monitoreo en tiempo real
-3. HISTORIAL: Revisa todas tus sesiones anteriores y progreso
-
-Conexión del Sensor:
-• Asegúrate de que el dispositivo ESP32 esté conectado a la red
-• Verifica que el sensor esté enviando datos correctamente
-• El puerto UDP configurado es: 8888
-
-Soporte Técnico:
-• Los datos se guardan automáticamente
-• Verifica la conexión de red si hay problemas
-• Reinicia la aplicación si experimentas errores`);
+        // Funciones del modal de ayuda
+        function showHelpModal() {
+            const modal = document.getElementById('helpModal');
+            if (modal) {
+                modal.style.display = 'block';
+            }
         }
 
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUserData();
-            checkSystemStatus();
-            loadProgressData();
-            
-            // Actualizar estado cada 30 segundos
-            setInterval(checkSystemStatus, 30000);
+        function closeHelpModal() {
+            const modal = document.getElementById('helpModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('helpModal');
+            if (event.target === modal) {
+                closeHelpModal();
+            }
         });
+
+        // Inicialización cuando carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar datos iniciales
+            loadUserData();
+            loadStats();
+            checkSystemStatus();
+            
+            // Actualizar estado del sistema cada 30 segundos
+            setInterval(checkSystemStatus, 30000);
+            
+            // Actualizar estadísticas cada 5 minutos
+            setInterval(loadStats, 300000);
+        });
+
+        // Manejar errores de red silenciosamente
+        window.addEventListener('unhandledrejection', function(event) {
+            // Prevenir que aparezcan alertas molestas
+            event.preventDefault();
+        });
+
+        // Prevenir alertas de errores de JavaScript
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            // Registrar en consola pero no mostrar alertas
+            console.log('Error silenciado:', msg);
+            return true;
+        };
     </script>
 </body>
 </html>

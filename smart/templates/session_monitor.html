@@ -329,6 +329,32 @@
             margin-top: 10px;
         }
 
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .message-box.show {
+            transform: translateX(0);
+        }
+
+        .message-box.error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        }
+
+        .message-box.warning {
+            background: linear-gradient(135deg, #ffa726, #ff9800);
+        }
+
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
@@ -407,7 +433,7 @@
                         <span class="bpm-unit">bpm</span>
                     </div>
                     <div class="last-reading">
-                        Última lectura: <span id="lastReading">--</span>
+                        última lectura: <span id="lastReading">--</span>
                     </div>
                 </div>
 
@@ -476,6 +502,11 @@
         </div>
     </div>
 
+    <!-- Message Box para notificaciones -->
+    <div id="messageBox" class="message-box">
+        <div id="messageText"></div>
+    </div>
+
     <script>
         (function(){
             // --- Estado UI / datos ---
@@ -493,6 +524,18 @@
 
             // --- Helpers DOM ---
             const $ = (id) => document.getElementById(id);
+            
+            const showMessage = (text, type = 'success', duration = 4000) => {
+                const messageBox = $('messageBox');
+                const messageText = $('messageText');
+                
+                messageText.textContent = text;
+                messageBox.className = `message-box ${type} show`;
+                
+                setTimeout(() => {
+                    messageBox.className = messageBox.className.replace(' show', '');
+                }, duration);
+            };
             
             const setConnectionStatus = (connected) => {
                 const indicator = $('statusIndicator');
@@ -519,9 +562,9 @@
                 
                 if (percentage < 60) return 'Reposo';
                 if (percentage < 70) return 'Grasa';
-                if (percentage < 80) return 'Aeróbico';
-                if (percentage < 90) return 'Anaeróbico';
-                return 'Máximo';
+                if (percentage < 80) return 'AerÃ³bico';
+                if (percentage < 90) return 'AnaerÃ³bico';
+                return 'MÃ¡ximo';
             };
 
             const updateDuration = () => {
@@ -537,170 +580,78 @@
             };
 
             const calculateCalories = (avgBpm, durationMin) => {
-                if (!avgBpm || !durationMin || durationMin === 0) return 0;
+                if (!avgBpm || !durationMin || durationMin <= 0) return 0;
                 
-                // Factores de corrección por género
-                const genderFactor = userGender.toLowerCase() === 'masculino' ? 1.0 : 0.9;
+                const es_hombre = userGender.toLowerCase() === 'masculino';
+                let cal_por_min;
                 
-                // Cálculo basado en zona de frecuencia cardíaca
-                const maxHR = 220 - userAge;
-                const hrPercentage = (avgBpm / maxHR) * 100;
+                if (es_hombre) {
+                    cal_por_min = (-55.0969 + (0.6309 * avgBpm) + (0.1988 * userWeight) + (0.2017 * userAge)) / 4.184;
+                } else {
+                    cal_por_min = (-20.4022 + (0.4472 * avgBpm) - (0.1263 * userWeight) + (0.074 * userAge)) / 4.184;
+                }
                 
-                // Factor de intensidad
-                let intensityFactor;
-                if (hrPercentage < 60) intensityFactor = 0.5;
-                else if (hrPercentage < 70) intensityFactor = 0.7;
-                else if (hrPercentage < 80) intensityFactor = 1.0;
-                else if (hrPercentage < 90) intensityFactor = 1.3;
-                else intensityFactor = 1.6;
-                
-                // Cálculo de calorías
-                const calories = userWeight * intensityFactor * genderFactor * durationMin * 0.1;
-                return Math.round(calories * 10) / 10;
+                cal_por_min = Math.max(cal_por_min, 0.5);
+                return Math.round(cal_por_min * durationMin * 100) / 100;
             };
 
-            // --- Actualizaciones UI ---
-            function updateStats(bpm, timestamp) {
-                if (bpm > 0) {
-                    $('bpmValue').textContent = bpm;
-                    $('lastReading').textContent = timestamp || '--';
-
-                    readings.push(bpm);
-                    readCount++;
-                    $('readingCount').textContent = readCount;
-
-                    const sum = readings.reduce((a,b) => a+b, 0);
-                    const avg = Math.round(sum / readings.length);
-                    const min = Math.min(...readings);
-                    const max = Math.max(...readings);
-
-                    $('avgBpm').textContent = isFinite(avg) ? avg : 0;
-                    $('minBpm').textContent = isFinite(min) ? min : 0;
-                    $('maxBpm').textContent = isFinite(max) ? max : 0;
-                    
-                    // Actualizar zona de frecuencia cardíaca
-                    $('heartRateZone').textContent = getHeartRateZone(bpm, userAge);
-                    
-                    // Calcular calorías en tiempo real
-                    if (sessionActive && sessionStartTime) {
-                        const durationMin = (new Date() - sessionStartTime) / 60000;
-                        currentCalories = calculateCalories(avg, durationMin);
-                        $('caloriesValue').textContent = currentCalories;
-                    }
-                }
-            }
-
-            // --- Poll al backend ---
-            async function pollOnce() {
-                try {
-                    const response = await fetch('/api/bpm', {
-                        cache: 'no-store',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const contentType = response.headers.get('content-type');
-                    if (!contentType || !contentType.includes('application/json')) {
-                        const text = await response.text();
-                        console.error('Respuesta no es JSON:', text.substring(0, 200));
-                        throw new Error('El servidor no devolvió JSON válido');
-                    }
-                    
-                    const data = await response.json();
-                    console.log('Datos recibidos:', data);
-                    
-                    const bpm = parseInt(data.bpm || 0);
-                    const timestamp = data.timestamp || null;
-
-                    if (timestamp) {
-                        setConnectionStatus(true);
-                    }
-                    
-                    if (!isNaN(bpm) && bpm > 0) {
-                        updateStats(bpm, timestamp);
-                    } else if (bpm === 0) {
-                        if (timestamp) {
-                            setConnectionStatus(true);
-                        }
-                    }
-                } catch(error) {
-                    setConnectionStatus(false);
-                    console.error('Error polling BPM:', error.message);
-                    $('connectionStatus').textContent = `Error: ${error.message}`;
-                }
-            }
-
-            function startPolling() {
-                if (pollTimer) return;
-                pollTimer = setInterval(pollOnce, 250);
-            }
-
-            function stopPolling() {
-                clearInterval(pollTimer);
-                pollTimer = null;
-            }
-
-            // --- Guardar sesión ---
-            async function saveSession() {
+            const updateStats = () => {
                 if (readings.length === 0) return;
                 
-                const sessionEndTime = new Date();
-                const durationMs = sessionEndTime - sessionStartTime;
-                const durationMin = Math.round(durationMs / 60000);
+                const validReadings = readings.filter(r => r > 0);
+                if (validReadings.length === 0) return;
                 
-                const avg = Math.round(readings.reduce((a,b) => a+b, 0) / readings.length);
-                const min = Math.min(...readings);
-                const max = Math.max(...readings);
+                const sum = validReadings.reduce((a, b) => a + b, 0);
+                const avg = Math.round(sum / validReadings.length);
+                const min = Math.min(...validReadings);
+                const max = Math.max(...validReadings);
                 
-                const sessionData = {
-                    fecha: sessionStartTime.toLocaleDateString('es-AR'),
-                    hora_inicio: sessionStartTime.toLocaleTimeString('es-AR'),
-                    hora_fin: sessionEndTime.toLocaleTimeString('es-AR'),
-                    usuario: userData.nombre || 'Usuario',
-                    edad: parseInt(userData.edad?.match(/\d+/)?.[0]) || userAge,
-                    genero: userData.genero || userGender,
-                    peso: parseFloat(userData.peso) || userWeight,
-                    altura: parseInt(userData.altura) || 170,
-                    duracion: durationMin,
-                    bpm_promedio: avg,
-                    bpm_min: min,
-                    bpm_max: max,
-                    lecturas_totales: readings.length
-                };
+                $('avgBpm').textContent = avg;
+                $('minBpm').textContent = min;
+                $('maxBpm').textContent = max;
                 
+                // Calcular calorías en tiempo real
+                if (sessionStartTime) {
+                    const durationMin = (Date.now() - sessionStartTime) / 60000;
+                    currentCalories = calculateCalories(avg, durationMin);
+                    $('caloriesValue').textContent = Math.round(currentCalories);
+                }
+                
+                // Actualizar zona de FC
+                $('heartRateZone').textContent = getHeartRateZone(avg, userAge);
+            };
+
+            const pollBPM = async () => {
                 try {
-                    const response = await fetch('/api/guardar-sesion', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(sessionData)
-                    });
+                    const response = await fetch('/api/bpm');
+                    const data = await response.json();
                     
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        console.log('Sesión guardada exitosamente');
-                        return result.calorias;
+                    if (data.bpm && data.bpm > 0) {
+                        setConnectionStatus(true);
+                        $('bpmValue').textContent = data.bpm;
+                        $('lastReading').textContent = data.timestamp || new Date().toLocaleTimeString();
+                        
+                        if (sessionActive) {
+                            readings.push(data.bpm);
+                            readCount++;
+                            $('readingCount').textContent = readCount;
+                            updateStats();
+                        }
                     } else {
-                        console.error('Error guardando sesión:', result.error);
-                        return null;
+                        setConnectionStatus(false);
                     }
                 } catch (error) {
-                    console.error('Error guardando sesión:', error);
-                    return null;
+                    console.error('Error polling BPM:', error);
+                    setConnectionStatus(false);
                 }
-            }
+            };
 
-            // --- Control de sesión ---
-            function startSession() {
-                if (sessionActive) return;
+            const startSession = async () => {
+                if (!userData.nombre) {
+                    showMessage('Por favor completa tu registro antes de iniciar una sesiÃ³n', 'warning');
+                    setTimeout(() => window.location.href = '/', 2000);
+                    return;
+                }
                 
                 sessionActive = true;
                 sessionStartTime = new Date();
@@ -708,122 +659,139 @@
                 readCount = 0;
                 currentCalories = 0;
                 
-                $('sessionState').textContent = 'En curso';
-                $('sessionStart').textContent = sessionStartTime.toLocaleTimeString();
+                // UI Updates
                 $('startBtn').disabled = true;
                 $('stopBtn').disabled = false;
-                
-                // Reset stats
+                $('sessionState').textContent = 'Activa';
+                $('sessionStart').textContent = sessionStartTime.toLocaleTimeString();
                 $('readingCount').textContent = '0';
                 $('avgBpm').textContent = '0';
                 $('minBpm').textContent = '0';
                 $('maxBpm').textContent = '0';
-                $('heartRateZone').textContent = '--';
                 $('caloriesValue').textContent = '0';
-                $('sessionDuration').textContent = '00:00';
                 
-                setConnectionStatus(false);
-                startPolling();
-                
-                // Iniciar contador de duración
+                // Timers
+                pollTimer = setInterval(pollBPM, 1000);
                 durationTimer = setInterval(updateDuration, 1000);
-            }
+                
+                showMessage('SesiÃ³n iniciada correctamente', 'success');
+            };
 
-            async function stopSession() {
+            const stopSession = async () => {
                 if (!sessionActive) return;
                 
                 sessionActive = false;
-                $('sessionState').textContent = 'Finalizando...';
+                
+                // Clear timers
+                if (pollTimer) clearInterval(pollTimer);
+                if (durationTimer) clearInterval(durationTimer);
+                
+                // UI Updates
                 $('startBtn').disabled = false;
                 $('stopBtn').disabled = true;
+                $('sessionState').textContent = 'Completada';
                 
-                stopPolling();
-                clearInterval(durationTimer);
-                setConnectionStatus(false);
+                // Prepare session data
+                const sessionEndTime = new Date();
+                const durationMs = sessionEndTime - sessionStartTime;
+                const durationMin = Math.round(durationMs / 60000 * 100) / 100;
                 
-                // Guardar sesión
-                const finalCalories = await saveSession();
+                const validReadings = readings.filter(r => r > 0);
+                const avgBpm = validReadings.length > 0 ? Math.round(validReadings.reduce((a,b) => a+b, 0) / validReadings.length) : 0;
+                const minBpm = validReadings.length > 0 ? Math.min(...validReadings) : 0;
+                const maxBpm = validReadings.length > 0 ? Math.max(...validReadings) : 0;
                 
-                $('sessionState').textContent = 'Finalizada';
+                const sessionData = {
+                    fecha: sessionStartTime.toISOString().split('T')[0],
+                    hora_inicio: sessionStartTime.toLocaleTimeString(),
+                    hora_fin: sessionEndTime.toLocaleTimeString(),
+                    usuario: userData.nombre || 'Usuario',
+                    edad: parseInt(userData.edad) || userAge,
+                    genero: userData.genero || userGender,
+                    peso: parseFloat(userData.peso) || userWeight,
+                    altura: parseInt(userData.altura) || 170,
+                    duracion: durationMin,
+                    bpm_promedio: avgBpm,
+                    bpm_min: minBpm,
+                    bpm_max: maxBpm,
+                    lecturas_totales: readCount
+                };
                 
-                // Mostrar resumen de la sesión
-                if (readings.length > 0) {
-                    const duration = Math.round((new Date() - sessionStartTime) / 1000 / 60);
-                    const avgBpm = Math.round(readings.reduce((a,b) => a+b, 0) / readings.length);
-                    const calories = finalCalories || currentCalories;
-                    
-                    alert(`¡Sesión finalizada exitosamente!
-                    
-Resumen:
-• Duración: ${duration} minutos
-• Lecturas: ${readCount}
-• BPM promedio: ${avgBpm}
-• Calorías quemadas: ${calories} cal
-• Sesión guardada en el historial`);
-                }
-            }
-
-            // --- Cargar datos del usuario ---
-            function loadUserData() {
                 try {
-                    userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    const response = await fetch('/api/guardar-sesion', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(sessionData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showMessage(`SesiÃ³n guardada correctamente. CalorÃ­as: ${Math.round(result.calorias)} cal`, 'success');
+                        currentCalories = result.calorias;
+                        $('caloriesValue').textContent = Math.round(currentCalories);
+                    } else {
+                        showMessage('Error al guardar la sesión: ' + (result.error || 'Error desconocido'), 'error');
+                    }
+                } catch (error) {
+                    console.error('Error saving session:', error);
+                    showMessage('Error de conexión al guardar la sesión', 'error');
+                }
+            };
+
+            const loadUserData = () => {
+                try {
+                    const savedData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    userData = savedData;
+                    
                     if (userData.nombre) {
                         $('userName').textContent = userData.nombre;
-                        $('userAge').textContent = userData.edad || '--';
-                        $('userGender').textContent = userData.genero || '--';
                         
-                        // Extraer datos para cálculos
+                        // Extraer edad numÃ©rica
                         const ageMatch = (userData.edad || '').match(/\d+/);
-                        if (ageMatch) {
-                            userAge = parseInt(ageMatch[0]);
-                        }
+                        userAge = ageMatch ? parseInt(ageMatch[0]) : 25;
+                        $('userAge').textContent = userAge;
                         
-                        if (userData.peso) {
-                            userWeight = parseFloat(userData.peso);
-                        }
+                        userGender = userData.genero || 'masculino';
+                        $('userGender').textContent = userGender;
                         
-                        if (userData.genero) {
-                            userGender = userData.genero;
-                        }
+                        userWeight = parseFloat(userData.peso) || 70;
                     } else {
-                        // Si no hay datos, redirigir a registro
-                        if (confirm('No se encontraron datos de usuario. ¿Deseas ir al registro?')) {
-                            window.location.href = '/';
-                        }
+                        $('userName').textContent = 'No registrado';
+                        $('userAge').textContent = '--';
+                        $('userGender').textContent = '--';
                     }
-                } catch(error) {
+                } catch (error) {
                     console.error('Error loading user data:', error);
+                    $('userName').textContent = 'Error al cargar';
                 }
-            }
+            };
 
-            // --- Navegación ---
+            // Navigation
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function() {
                     const page = this.getAttribute('data-page');
                     if (page) {
-                        // Confirmar si hay sesión activa
                         if (sessionActive && page !== '/sesion') {
-                            if (confirm('Hay una sesión activa. ¿Deseas detenerla y continuar?')) {
-                                stopSession();
-                                setTimeout(() => {
-                                    window.location.href = page;
-                                }, 1000);
-                            }
-                        } else {
-                            window.location.href = page;
+                            showMessage('Detén la sesión actual antes de navegar', 'warning');
+                            return;
                         }
+                        window.location.href = page;
                     }
                 });
             });
 
-            // --- Event listeners ---
+            // Event Listeners
             $('startBtn').addEventListener('click', startSession);
             $('stopBtn').addEventListener('click', stopSession);
 
-            // --- Inicialización ---
-            setConnectionStatus(false);
+            // Initialize
             loadUserData();
-            pollOnce();
+            
+            // Check connection initially
+            pollBPM();
         })();
     </script>
 </body>
